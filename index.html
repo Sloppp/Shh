@@ -29,6 +29,7 @@
         async function hashInput(input) {
         const encoder = new TextEncoder();
         const data = encoder.encode(input);
+        const encodedClue = "Y2x1ZS5odG1s"; 
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -60,7 +61,7 @@
         let hashedInput = await hashInput(userInput);
 
         if (hashedInput === correctHash) {
-            window.location.href = 'clue.html';
+            window.location.href = decodeBase64(encodedClue);
         } else {
             document.getElementById("message").textContent = "Incorrect! Locked out for 5 minutes.";
             localStorage.setItem("lockout", Date.now() + lockoutTime);

@@ -64,8 +64,8 @@
         let hashedInput = await hashInput(userInput);
 
         if (hashedInput === correctHash) {
-            //window.location.href = decodeBase64(encodedClue);
-            window.location.href = 'clue.html'
+            window.location.href = decodeBase64(encodedClue);
+            //window.location.href = 'clue.html'
         } else {
             document.getElementById("message").textContent = "Incorrect! Locked out for 5 minutes.";
             localStorage.setItem("lockout", Date.now() + lockoutTime);

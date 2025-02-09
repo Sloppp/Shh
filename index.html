@@ -23,13 +23,14 @@
     <p id="message"></p>
     
     <script>
+       const encodedClue = "Y2x1ZS5odG1s";
         const correctHash = "0582daa1107c481c7aac14e49e5ec5d86dc4a12a99ef932055beae1e7c57660b";
         const lockoutTime = 5 * 60 * 1000; // 5 minutes in milliseconds
 
         async function hashInput(input) {
         const encoder = new TextEncoder();
         const data = encoder.encode(input);
-        const encodedClue = "Y2x1ZS5odG1s"; 
+         
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     }

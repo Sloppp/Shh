@@ -48,8 +48,16 @@
     }
 
         function decodeBase64(str) {
-    return decodeURIComponent(escape(atob(str)));
+    try {
+        let decoded = atob(str);
+        console.log("Decoded URL:", decoded); // Debugging
+        return decoded;
+    } catch (error) {
+        console.error("Base64 Decoding Error:", error);
+        return null;
+    }
 }
+        
         async function checkCode() {
         const lockedUntil = localStorage.getItem("lockout");
         if (lockedUntil && Date.now() < parseInt(lockedUntil)) {
@@ -64,7 +72,15 @@
         let hashedInput = await hashInput(userInput);
 
         if (hashedInput === correctHash) {
-            window.location.href = decodeBase64(encodedClue);
+           let clueURL = decodeBase64(encodedClue);
+        if (clueURL) {
+            console.log("Redirecting to:", clueURL); // Debugging
+            window.location.href = clueURL;
+        } else {
+            console.error("Decoding failed - not redirecting");
+        }
+            
+            // window.location.href = decodeBase64(encodedClue);
             //window.location.href = 'clue.html'
         } else {
             document.getElementById("message").textContent = "Incorrect! Locked out for 5 minutes.";

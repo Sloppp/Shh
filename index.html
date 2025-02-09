@@ -48,7 +48,7 @@
     }
 
         function decodeBase64(str) {
-    return atob(str);
+    return decodeURIComponent(escape(atob(str)));
 }
         async function checkCode() {
         const lockedUntil = localStorage.getItem("lockout");

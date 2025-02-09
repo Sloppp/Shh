@@ -47,6 +47,9 @@
         }
     }
 
+        function decodeBase64(str) {
+    return atob(str);
+}
         async function checkCode() {
         const lockedUntil = localStorage.getItem("lockout");
         if (lockedUntil && Date.now() < parseInt(lockedUntil)) {

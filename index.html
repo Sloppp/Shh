@@ -12,7 +12,57 @@
     </style>
 </head>
 <body>
-    <h2>Come back later. The next clue will unlock on April 2.</h2>
+    <h2>Enter the Secret Code</h2>
+    <div>
+        <select id="letter1"></select>
+        <select id="letter2"></select>
+        <select id="letter3"></select>
+        <select id="letter4"></select>
+    </div>
+    <button onclick="checkCode()">Submit</button>
+    <p id="message"></p>
     
+    <script>
+        const correctCode = ['M', 'Y', 'S', 'T']; // Change this to your secret code
+        const lockoutTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+        function populateDropdowns() {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            document.querySelectorAll('select').forEach(select => {
+                alphabet.forEach(letter => {
+                    let option = document.createElement('option');
+                    option.value = letter;
+                    option.textContent = letter;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        async function hashInput(input) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function checkCode() {
+    let userInput = document.getElementById('letter1').value +
+                    document.getElementById('letter2').value +
+                    document.getElementById('letter3').value +
+                    document.getElementById('letter4').value;
+
+    let hashedInput = await hashInput(userInput);
+    const correctHash = "0582daa1107c481c7aac14e49e5ec5d86dc4a12a99ef932055beae1e7c57660b";
+
+    if (hashedInput === correctHash) {
+        window.location.href = 'clue.html';
+    } else {
+        document.getElementById('message').textContent = 'Incorrect! Try again in 5 minutes.';
+        localStorage.setItem('lockout', Date.now() + 5 * 60 * 1000);
+    }
+}
+        
+        populateDropdowns();
+    </script>
 </body>
 </html>

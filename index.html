@@ -19,13 +19,67 @@
         <select id="letter3"></select>
         <select id="letter4"></select>
     </div>
-    <button onclick="checkCode()">Submit</button>
+    <button id="submitBtn" onclick="checkCode()">Submit</button> <!-- Now has an id -->
     <p id="message"></p>
     
     <script>
-        const correctCode = ['M', 'Y', 'S', 'T']; // Change this to your secret code
+        const encodedClue = "Y2x1ZS5odG1s";
+        const correctHash = "a3c54acef4b14eaf03b66bd777414ebcdf3ca13e4eb47c85828934e46ced1ff8";
         const lockoutTime = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+        async function hashInput(input) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(input); 
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function checkLockout() {
+            const lockedUntil = localStorage.getItem("lockout");
+            if (lockedUntil && Date.now() < parseInt(lockedUntil)) {
+                const remainingTime = Math.ceil((parseInt(lockedUntil) - Date.now()) / 1000);
+                document.getElementById("message").textContent = `Locked out! Try again in ${remainingTime} seconds.`;
+                document.getElementById("submitBtn").disabled = true;
+                setTimeout(checkLockout, 1000); // Update every second
+            } else {
+                document.getElementById("message").textContent = ""; 
+                document.getElementById("submitBtn").disabled = false;
+               }
+        }
+
+        function decodeBase64(str) {
+            try {
+                let decoded = atob(str);
+                return decoded;
+            } catch (error) {
+                return null;
+            }
+        }
+        
+        async function checkCode() {
+            const lockedUntil = localStorage.getItem("lockout");
+            if (lockedUntil && Date.now() < parseInt(lockedUntil)) {
+                return; // Prevent checking during lockout
+            }
+
+            let userInput = document.getElementById("letter1").value +
+                            document.getElementById("letter2").value +
+                            document.getElementById("letter3").value +
+                            document.getElementById("letter4").value;
+
+            let hashedInput = await hashInput(userInput);
+
+            if (hashedInput === correctHash) {
+                let clueURL = decodeBase64(encodedClue);
+                window.location.href = clueURL;
+            } else {
+                document.getElementById("message").textContent = "Incorrect! Locked out for 5 minutes.";
+                localStorage.setItem("lockout", Date.now() + lockoutTime);
+                document.getElementById("submitBtn").disabled = true;
+                checkLockout(); // Start lockout countdown
+            }
+        }
+        
         function populateDropdowns() {
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
             document.querySelectorAll('select').forEach(select => {
@@ -39,30 +93,14 @@
         }
 
         async function hashInput(input) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function checkCode() {
-    let userInput = document.getElementById('letter1').value +
-                    document.getElementById('letter2').value +
-                    document.getElementById('letter3').value +
-                    document.getElementById('letter4').value;
-
-    let hashedInput = await hashInput(userInput);
-    const correctHash = "0582daa1107c481c7aac14e49e5ec5d86dc4a12a99ef932055beae1e7c57660b";
-
-    if (hashedInput === correctHash) {
-        window.location.href = 'clue.html';
-    } else {
-        document.getElementById('message').textContent = 'Incorrect! Try again in 5 minutes.';
-        localStorage.setItem('lockout', Date.now() + 5 * 60 * 1000);
-    }
-}
+            const encoder = new TextEncoder();
+            const data = encoder.encode(input);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
         
         populateDropdowns();
+        checkLockout(); // Check lockout on page load
     </script>
 </body>
 </html>
